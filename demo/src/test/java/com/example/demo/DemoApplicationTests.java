@@ -1,12 +1,24 @@
 package com.tondomaine;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootApplication
-public class DemoApplication {
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-    public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+@SpringBootTest
+class DemoApplicationTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testHello() throws Exception {
+        mockMvc.perform(get("/hello"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Bonjour, bienvenue dans l'application Spring Boot!"));
     }
 }
