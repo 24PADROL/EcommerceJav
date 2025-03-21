@@ -1,13 +1,12 @@
-package com.example.demo;
+package com.tondomaine;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootTest
-class DemoApplicationTests {
+@SpringBootApplication
+public class DemoApplication {
 
-	@Test
-	void contextLoads() {
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
 }
