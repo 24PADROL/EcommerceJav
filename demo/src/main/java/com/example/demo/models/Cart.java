@@ -2,7 +2,6 @@ package com.example.demo.models;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class Cart {
     private Long id;
@@ -19,7 +18,6 @@ public class Cart {
         this.items = new HashMap<>();
     }
 
-    // Getters et Setters
     public Long getId() {
         return id;
     }
@@ -44,9 +42,13 @@ public class Cart {
         this.items = items;
     }
 
-    // Méthodes métier
     public void addProduct(Product product, int quantity) {
-        items.put(product, items.getOrDefault(product, 0) + quantity);
+        if (items.containsKey(product)) {
+            int currentQty = items.get(product);
+            items.put(product, currentQty + quantity);
+        } else {
+            items.put(product, quantity);
+        }
     }
 
     public void removeProduct(Product product) {
@@ -62,25 +64,31 @@ public class Cart {
     }
 
     public double calculateTotal() {
-        return items.entrySet().stream()
-                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
-                .sum();
+        double total = 0.0;
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
+            total += product.getPrice() * quantity;
+        }
+        return total;
     }
 
     public void clear() {
         items.clear();
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Cart cart = (Cart) o;
-        return Objects.equals(id, cart.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    
+    public void displayCart() {
+        System.out.println("Contenu du panier #" + id + ":");
+        if (items.isEmpty()) {
+            System.out.println("Le panier est vide");
+        } else {
+            for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+                Product product = entry.getKey();
+                int quantity = entry.getValue();
+                System.out.println(" - " + product.getProductName() + " x" + quantity + 
+                                   " = " + (product.getPrice() * quantity) + " €");
+            }
+            System.out.println("Total: " + calculateTotal() + " €");
+        }
     }
 }

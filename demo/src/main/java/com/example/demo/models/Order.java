@@ -3,7 +3,6 @@ package com.example.demo.models;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class Order {
     private Long id;
@@ -29,10 +28,9 @@ public class Order {
         this.items = new HashMap<>(items);
         this.orderDate = LocalDateTime.now();
         this.status = "PENDING";
-        this.calculateTotalAmount();
+        calculateTotalAmount();
     }
 
-    // Getters et Setters
     public Long getId() {
         return id;
     }
@@ -63,7 +61,7 @@ public class Order {
 
     public void setItems(Map<Product, Integer> items) {
         this.items = items;
-        this.calculateTotalAmount();
+        calculateTotalAmount();
     }
 
     public String getStatus() {
@@ -106,37 +104,47 @@ public class Order {
         this.paymentMethod = paymentMethod;
     }
 
-    // Méthodes métier
-    public void placeOrder() {
+    public void processOrder() {
         this.status = "PROCESSING";
-        // Mise à jour du stock se fera dans le service
+        System.out.println("Commande #" + orderID + " en cours de traitement...");
     }
 
     public void updateStatus(String newStatus) {
         this.status = newStatus;
+        System.out.println("Statut de la commande #" + orderID + " mis à jour: " + newStatus);
     }
 
     private void calculateTotalAmount() {
-        this.totalAmount = items.entrySet().stream()
-                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
-                .sum();
+        totalAmount = 0;
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
+            totalAmount += product.getPrice() * quantity;
+        }
         
-        // Appliquer réduction si l'utilisateur est éligible
         if (user != null) {
-            this.totalAmount = user.applyDiscount(this.totalAmount);
+            totalAmount = user.applyDiscount(totalAmount);
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Order order = (Order) o;
-        return Objects.equals(orderID, order.orderID);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(orderID);
+    public void displayOrderDetails() {
+        System.out.println("=== DÉTAILS DE LA COMMANDE #" + orderID + " ===");
+        System.out.println("Date: " + orderDate);
+        System.out.println("Statut: " + status);
+        System.out.println("Client: " + (user != null ? user.getUsername() : "Inconnu"));
+        System.out.println("Adresse de livraison: " + shippingAddress);
+        System.out.println("Méthode de paiement: " + paymentMethod);
+        System.out.println("Articles:");
+        
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
+            double lineTotal = product.getPrice() * quantity;
+            System.out.println(" - " + product.getProductName() + " x" + quantity + 
+                              " = " + lineTotal + " €");
+        }
+        
+        System.out.println("Montant total: " + totalAmount + " €");
+        System.out.println("======================================");
     }
 }

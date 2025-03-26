@@ -1,111 +1,86 @@
 package com.example.demo.models;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.Objects;
-
-public class Product {
+public class User {
     private Long id;
-    private String productName;
-    private String productID;
-    private double price;
-    private int stockQuantity;
-    private String description;
-    private String category;
-
-    public Product() {
+    private String username;
+    private String email;
+    private String password;
+    private List<Order> orderHistory;
+    private String userType;
+    
+    public User() {
+        this.orderHistory = new ArrayList<>();
+        this.userType = "REGULAR";
     }
-
-    public Product(Long id, String productName, String productID, double price, int stockQuantity) {
+    
+    public User(Long id, String username, String email, String password) {
         this.id = id;
-        this.productName = productName;
-        this.productID = productID;
-        this.price = price;
-        this.stockQuantity = stockQuantity;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.orderHistory = new ArrayList<>();
+        this.userType = "REGULAR";
     }
-
-    // Getters et Setters
+    
     public Long getId() {
         return id;
     }
-
+    
     public void setId(Long id) {
         this.id = id;
     }
-
-    public String getProductName() {
-        return productName;
+    
+    public String getUsername() {
+        return username;
     }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
+    
+    public void setUsername(String username) {
+        this.username = username;
     }
-
-    public String getProductID() {
-        return productID;
+    
+    public String getEmail() {
+        return email;
     }
-
-    public void setProductID(String productID) {
-        this.productID = productID;
+    
+    public void setEmail(String email) {
+        this.email = email;
     }
-
-    public double getPrice() {
-        return price;
+    
+    public String getPassword() {
+        return password;
     }
-
-    public void setPrice(double price) {
-        this.price = price;
+    
+    public void setPassword(String password) {
+        this.password = password;
     }
-
-    public int getStockQuantity() {
-        return stockQuantity;
+    
+    public List<Order> getOrderHistory() {
+        return orderHistory;
     }
-
-    public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
+    
+    public void setOrderHistory(List<Order> orderHistory) {
+        this.orderHistory = orderHistory;
     }
-
-    public String getDescription() {
-        return description;
+    
+    public String getUserType() {
+        return userType;
     }
-
-    public void setDescription(String description) {
-        this.description = description;
+    
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
-
-    public String getCategory() {
-        return category;
+    
+    public boolean login(String email, String password) {
+        return this.email.equals(email) && this.password.equals(password);
     }
-
-    public void setCategory(String category) {
-        this.category = category;
+    
+    public void addOrder(Order order) {
+        this.orderHistory.add(order);
     }
-
-    // Méthodes métier
-    public void updateStock(int quantity) {
-        this.stockQuantity += quantity;
-    }
-
-    public String getProductDetails() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + productName + '\'' +
-                ", productID='" + productID + '\'' +
-                ", price=" + price +
-                ", stockQuantity=" + stockQuantity +
-                ", description='" + description + '\'' +
-                ", category='" + category + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Objects.equals(productID, product.productID);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(productID);
+    
+    public double applyDiscount(double amount) {
+        return amount;
     }
 }

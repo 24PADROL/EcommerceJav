@@ -5,11 +5,14 @@ import java.time.LocalDate;
 public class PremiumUser extends User {
     private LocalDate membershipStart;
     private LocalDate membershipEnd;
-    private String membershipTier; // SILVER, GOLD, PLATINUM
+    private String membershipTier;
 
     public PremiumUser() {
         super();
         this.setUserType("PREMIUM");
+        this.membershipStart = LocalDate.now();
+        this.membershipEnd = membershipStart.plusYears(1);
+        this.membershipTier = "SILVER";
     }
 
     public PremiumUser(Long id, String username, String email, String password) {
@@ -20,7 +23,6 @@ public class PremiumUser extends User {
         this.membershipTier = "SILVER";
     }
 
-    // Getters et Setters spécifiques
     public LocalDate getMembershipStart() {
         return membershipStart;
     }
@@ -45,7 +47,7 @@ public class PremiumUser extends User {
         this.membershipTier = membershipTier;
     }
 
-    // Méthodes spécifiques aux utilisateurs premium
+    // Méthodes spécifiques
     public boolean isMembershipActive() {
         return LocalDate.now().isBefore(membershipEnd);
     }
@@ -54,19 +56,16 @@ public class PremiumUser extends User {
         this.membershipEnd = this.membershipEnd.plusMonths(months);
     }
 
-    // Polymorphisme
     @Override
     public double applyDiscount(double amount) {
-        // Appliquer une réduction en fonction du niveau d'adhésion
-        switch (membershipTier) {
-            case "PLATINUM":
-                return amount * 0.80; // 20% de réduction
-            case "GOLD":
-                return amount * 0.85; // 15% de réduction
-            case "SILVER":
-                return amount * 0.90; // 10% de réduction
-            default:
-                return amount;
+        if ("PLATINUM".equals(membershipTier)) {
+            return amount * 0.80; // 20% de réduction
+        } else if ("GOLD".equals(membershipTier)) {
+            return amount * 0.85; // 15% de réduction
+        } else if ("SILVER".equals(membershipTier)) {
+            return amount * 0.90; // 10% de réduction
+        } else {
+            return amount;
         }
     }
 }

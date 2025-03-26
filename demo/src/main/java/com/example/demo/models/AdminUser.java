@@ -7,6 +7,7 @@ public class AdminUser extends User {
     public AdminUser() {
         super();
         this.setUserType("ADMIN");
+        this.adminLevel = "STANDARD";
     }
 
     public AdminUser(Long id, String username, String email, String password) {
@@ -15,7 +16,6 @@ public class AdminUser extends User {
         this.adminLevel = "STANDARD";
     }
 
-    // Getters et Setters spécifiques
     public String getAdminLevel() {
         return adminLevel;
     }
@@ -32,7 +32,6 @@ public class AdminUser extends User {
         this.department = department;
     }
 
-    // Méthodes spécifiques aux administrateurs
     public boolean canManageProducts() {
         return true;
     }
@@ -41,10 +40,8 @@ public class AdminUser extends User {
         return "HIGH".equals(adminLevel);
     }
 
-    // Polymorphisme
     @Override
     public double applyDiscount(double amount) {
-        // Les administrateurs ont 15% de réduction
         return amount * 0.85;
     }
 }

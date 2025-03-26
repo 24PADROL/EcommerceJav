@@ -2,7 +2,6 @@ package com.example.demo.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class User {
     private Long id;
@@ -10,10 +9,11 @@ public class User {
     private String email;
     private String password;
     private List<Order> orderHistory;
-    private String userType; // pour le polymorphisme (REGULAR, ADMIN, PREMIUM)
+    private String userType;
 
     public User() {
         this.orderHistory = new ArrayList<>();
+        this.userType = "REGULAR";
     }
 
     public User(Long id, String username, String email, String password) {
@@ -25,7 +25,6 @@ public class User {
         this.userType = "REGULAR";
     }
 
-    // Getter et Setters
     public Long getId() {
         return id;
     }
@@ -74,35 +73,15 @@ public class User {
         this.userType = userType;
     }
 
-    // Méthodes métier
-    public void register() {
-        // La logique d'enregistrement sera dans le service
-    }
-
     public boolean login(String email, String password) {
         return this.email.equals(email) && this.password.equals(password);
     }
-
-    public List<Order> viewOrderHistory() {
-        return this.orderHistory;
+    
+    public void addOrder(Order order) {
+        this.orderHistory.add(order);
     }
     
-    // Méthode pour le polymorphisme
     public double applyDiscount(double amount) {
-        // Implémentation de base: pas de réduction
         return amount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }
