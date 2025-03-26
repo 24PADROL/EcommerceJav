@@ -1,4 +1,4 @@
-package com.tondomaine;
+gipackage com.tondomaine;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
