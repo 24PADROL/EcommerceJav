@@ -1,40 +1,38 @@
 package com.example.demo.services;
 
+import com.example.demo.models.User;
 import com.example.demo.models.AdminUser;
 import com.example.demo.models.PremiumUser;
-import com.example.demo.models.User;
-import com.example.demo.repositories.CartRepository;
 import com.example.demo.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.example.demo.repositories.CartRepository;
 import java.util.List;
-import java.util.Optional;
 
-@Service
+// Service simplifié, sans annotations Spring
 public class UserService {
-    private final UserRepository userRepository;
-    private final CartRepository cartRepository;
+    private UserRepository userRepository;
+    private CartRepository cartRepository;
 
-    @Autowired
+    // Constructeur avec injection manuelle de dépendance
     public UserService(UserRepository userRepository, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
     }
 
+    // Méthodes simplifiées
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(Long id) {
+    public User getUserById(Long id) {
         return userRepository.findById(id);
     }
 
     public User registerUser(User user) {
         // Vérifier si l'e-mail existe déjà
-        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
-        if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
+        User existingUser = userRepository.findByEmail(user.getEmail());
+        if (existingUser != null) {
+            System.out.println("Erreur: Email déjà enregistré");
+            return null;
         }
         
         return userRepository.save(user);
@@ -42,9 +40,10 @@ public class UserService {
 
     public User registerAdminUser(AdminUser adminUser) {
         // Vérifier si l'e-mail existe déjà
-        Optional<User> existingUser = userRepository.findByEmail(adminUser.getEmail());
-        if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
+        User existingUser = userRepository.findByEmail(adminUser.getEmail());
+        if (existingUser != null) {
+            System.out.println("Erreur: Email déjà enregistré");
+            return null;
         }
         
         return userRepository.save(adminUser);
@@ -52,31 +51,42 @@ public class UserService {
 
     public User registerPremiumUser(PremiumUser premiumUser) {
         // Vérifier si l'e-mail existe déjà
-        Optional<User> existingUser = userRepository.findByEmail(premiumUser.getEmail());
-        if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
+        User existingUser = userRepository.findByEmail(premiumUser.getEmail());
+        if (existingUser != null) {
+            System.out.println("Erreur: Email déjà enregistré");
+            return null;
         }
         
         return userRepository.save(premiumUser);
     }
 
-    public Optional<User> login(String email, String password) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isPresent() && userOpt.get().login(email, password)) {
-            return userOpt;
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user != null && user.login(email, password)) {
+            System.out.println("Connexion réussie pour " + user.getUsername());
+            return user;
         }
-        return Optional.empty();
+        System.out.println("Échec de la connexion");
+        return null;
     }
 
-    public void updateUser(User user) {
+    public User updateUser(User user) {
         // Vérifie si l'utilisateur existe
-        if (!userRepository.findById(user.getId()).isPresent()) {
-            throw new IllegalArgumentException("User not found");
+        User existingUser = userRepository.findById(user.getId());
+        if (existingUser == null) {
+            System.out.println("Erreur: Utilisateur non trouvé");
+            return null;
         }
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
+        System.out.println("Utilisateur supprimé avec succès");
+    }
+    
+    // Méthode pour afficher tous les utilisateurs (utile pour tests)
+    public void displayAllUsers() {
+        userRepository.displayAllUsers();
     }
 }

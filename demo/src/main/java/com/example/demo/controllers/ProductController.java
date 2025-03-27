@@ -2,21 +2,18 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.Product;
 import com.example.demo.services.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
     private final ProductService productService;
 
-    @Autowired
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
@@ -29,10 +26,13 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Optional<Product> productOpt = productService.getProductById(id);
+        Product product = productService.getProductById(id);
         
-        return productOpt.map(product -> new ResponseEntity<>(product, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        if (product != null) {
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/category/{category}")
@@ -43,10 +43,11 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        try {
-            Product newProduct = productService.addProduct(product);
+        Product newProduct = productService.addProduct(product);
+        
+        if (newProduct != null) {
             return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
+        } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -57,10 +58,11 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         
-        try {
-            Product updatedProduct = productService.updateProduct(product);
+        Product updatedProduct = productService.updateProduct(product);
+        
+        if (updatedProduct != null) {
             return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

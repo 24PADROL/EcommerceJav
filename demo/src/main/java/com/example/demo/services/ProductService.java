@@ -2,30 +2,27 @@ package com.example.demo.services;
 
 import com.example.demo.models.Product;
 import com.example.demo.repositories.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 
-@Service
+// Service simplifié, sans annotations Spring
 public class ProductService {
-    private final ProductRepository productRepository;
+    private ProductRepository productRepository;
 
-    @Autowired
+    // Constructeur avec injection manuelle de dépendance
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
+    // Méthodes simplifiées
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    public Optional<Product> getProductById(Long id) {
+    public Product getProductById(Long id) {
         return productRepository.findById(id);
     }
 
-    public Optional<Product> getProductByProductID(String productID) {
+    public Product getProductByProductID(String productID) {
         return productRepository.findByProductID(productID);
     }
 
@@ -35,9 +32,10 @@ public class ProductService {
 
     public Product addProduct(Product product) {
         // Vérifier si le productID existe déjà
-        Optional<Product> existingProduct = productRepository.findByProductID(product.getProductID());
-        if (existingProduct.isPresent()) {
-            throw new IllegalArgumentException("Product ID already exists");
+        Product existingProduct = productRepository.findByProductID(product.getProductID());
+        if (existingProduct != null) {
+            System.out.println("Erreur: ID de produit déjà existant");
+            return null;
         }
         
         return productRepository.save(product);
@@ -45,29 +43,31 @@ public class ProductService {
 
     public Product updateProduct(Product product) {
         // Vérifier si le produit existe
-        if (!productRepository.findById(product.getId()).isPresent()) {
-            throw new IllegalArgumentException("Product not found");
+        Product existingProduct = productRepository.findById(product.getId());
+        if (existingProduct == null) {
+            System.out.println("Erreur: Produit non trouvé");
+            return null;
         }
         
         return productRepository.save(product);
     }
 
     public boolean deleteProduct(Long id) {
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isPresent()) {
+        Product product = productRepository.findById(id);
+        if (product != null) {
             productRepository.deleteById(id);
             return true;
         }
+        System.out.println("Erreur: Impossible de supprimer, produit non trouvé");
         return false;
     }
 
     public boolean updateStock(Long productId, int quantity) {
-        Optional<Product> productOpt = productRepository.findById(productId);
-        if (productOpt.isPresent()) {
-            Product product = productOpt.get();
-            
-            // Vérifier si le stock disponible est suffisant (si on réduit le stock)
+        Product product = productRepository.findById(productId);
+        if (product != null) {
+            // Si on réduit le stock, vérifier qu'il y a assez
             if (quantity < 0 && Math.abs(quantity) > product.getStockQuantity()) {
+                System.out.println("Erreur: Stock insuffisant");
                 return false;
             }
             
@@ -76,5 +76,10 @@ public class ProductService {
             return true;
         }
         return false;
+    }
+    
+    // Méthode pour afficher tous les produits (utile pour tests)
+    public void displayAllProducts() {
+        productRepository.displayAllProducts();
     }
 }

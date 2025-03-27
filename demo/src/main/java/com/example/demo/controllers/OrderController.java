@@ -2,21 +2,18 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.Order;
 import com.example.demo.services.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService orderService;
 
-    @Autowired
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
@@ -29,10 +26,13 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        Optional<Order> orderOpt = orderService.getOrderById(id);
+        Order order = orderService.getOrderById(id);
         
-        return orderOpt.map(order -> new ResponseEntity<>(order, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        if (order != null) {
+            return new ResponseEntity<>(order, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/status/{status}")
@@ -50,9 +50,12 @@ public class OrderController {
             String paymentMethod = request.get("paymentMethod").toString();
             
             Order order = orderService.placeOrder(userId, cartId, shippingAddress, paymentMethod);
-            return new ResponseEntity<>(order, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            
+            if (order != null) {
+                return new ResponseEntity<>(order, HttpStatus.CREATED);
+            } else {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -66,10 +69,11 @@ public class OrderController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         
-        try {
-            Order updatedOrder = orderService.updateOrderStatus(id, newStatus);
+        Order updatedOrder = orderService.updateOrderStatus(id, newStatus);
+        
+        if (updatedOrder != null) {
             return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

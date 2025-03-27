@@ -6,35 +6,32 @@ import com.example.demo.models.User;
 import com.example.demo.repositories.CartRepository;
 import com.example.demo.repositories.ProductRepository;
 import com.example.demo.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
-@Service
+// Service simplifié, sans annotations Spring
 public class CartService {
-    private final CartRepository cartRepository;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private CartRepository cartRepository;
+    private UserRepository userRepository;
+    private ProductRepository productRepository;
 
-    @Autowired
+    // Constructeur avec injection manuelle de dépendance
     public CartService(CartRepository cartRepository, UserRepository userRepository, ProductRepository productRepository) {
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
     }
 
+    // Méthodes simplifiées
     public Cart getOrCreateCart(Long userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (!userOpt.isPresent()) {
-            throw new IllegalArgumentException("User not found");
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            System.out.println("Erreur: Utilisateur non trouvé");
+            return null;
         }
         
-        User user = userOpt.get();
-        Optional<Cart> cartOpt = cartRepository.findByUser(user);
+        Cart cart = cartRepository.findByUser(user);
         
-        if (cartOpt.isPresent()) {
-            return cartOpt.get();
+        if (cart != null) {
+            return cart;
         } else {
             Cart newCart = new Cart();
             newCart.setUser(user);
@@ -44,25 +41,26 @@ public class CartService {
 
     public Cart addProductToCart(Long cartId, Long productId, int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+            System.out.println("Erreur: La quantité doit être positive");
+            return null;
         }
 
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        Optional<Product> productOpt = productRepository.findById(productId);
+        Cart cart = cartRepository.findById(cartId);
+        Product product = productRepository.findById(productId);
 
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return null;
         }
-        if (!productOpt.isPresent()) {
-            throw new IllegalArgumentException("Product not found");
+        if (product == null) {
+            System.out.println("Erreur: Produit non trouvé");
+            return null;
         }
-
-        Cart cart = cartOpt.get();
-        Product product = productOpt.get();
 
         // Vérifier si le stock est suffisant
         if (product.getStockQuantity() < quantity) {
-            throw new IllegalArgumentException("Not enough stock available");
+            System.out.println("Erreur: Stock insuffisant");
+            return null;
         }
 
         cart.addProduct(product, quantity);
@@ -70,43 +68,42 @@ public class CartService {
     }
 
     public Cart removeProductFromCart(Long cartId, Long productId) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        Optional<Product> productOpt = productRepository.findById(productId);
+        Cart cart = cartRepository.findById(cartId);
+        Product product = productRepository.findById(productId);
 
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return null;
         }
-        if (!productOpt.isPresent()) {
-            throw new IllegalArgumentException("Product not found");
+        if (product == null) {
+            System.out.println("Erreur: Produit non trouvé");
+            return null;
         }
-
-        Cart cart = cartOpt.get();
-        Product product = productOpt.get();
 
         cart.removeProduct(product);
         return cartRepository.save(cart);
     }
 
     public Cart updateProductQuantity(Long cartId, Long productId, int quantity) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        Optional<Product> productOpt = productRepository.findById(productId);
+        Cart cart = cartRepository.findById(cartId);
+        Product product = productRepository.findById(productId);
 
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return null;
         }
-        if (!productOpt.isPresent()) {
-            throw new IllegalArgumentException("Product not found");
+        if (product == null) {
+            System.out.println("Erreur: Produit non trouvé");
+            return null;
         }
-
-        Cart cart = cartOpt.get();
-        Product product = productOpt.get();
 
         if (quantity <= 0) {
             cart.removeProduct(product);
         } else {
             // Vérifier si le stock est suffisant
             if (product.getStockQuantity() < quantity) {
-                throw new IllegalArgumentException("Not enough stock available");
+                System.out.println("Erreur: Stock insuffisant");
+                return null;
             }
             cart.updateProductQuantity(product, quantity);
         }
@@ -115,22 +112,35 @@ public class CartService {
     }
 
     public double calculateCartTotal(Long cartId) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        Cart cart = cartRepository.findById(cartId);
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return 0.0;
         }
         
-        return cartOpt.get().calculateTotal();
+        return cart.calculateTotal();
     }
 
     public void clearCart(Long cartId) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        Cart cart = cartRepository.findById(cartId);
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return;
         }
         
-        Cart cart = cartOpt.get();
         cart.clear();
         cartRepository.save(cart);
+        System.out.println("Panier vidé avec succès");
+    }
+    
+    // Méthode pour afficher les détails du panier
+    public void displayCart(Long cartId) {
+        Cart cart = cartRepository.findById(cartId);
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return;
+        }
+        
+        cart.displayCart();
     }
 }

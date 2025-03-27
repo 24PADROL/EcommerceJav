@@ -8,25 +8,21 @@ import com.example.demo.repositories.CartRepository;
 import com.example.demo.repositories.OrderRepository;
 import com.example.demo.repositories.ProductRepository;
 import com.example.demo.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
-@Service
+// Service simplifié, sans annotations Spring
 public class OrderService {
-    private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
-    private final ProductService productService;
+    private OrderRepository orderRepository;
+    private UserRepository userRepository;
+    private CartRepository cartRepository;
+    private ProductRepository productRepository;
+    private ProductService productService;
 
-    @Autowired
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, 
+    // Constructeur avec injection manuelle de dépendance
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository,
                        CartRepository cartRepository, ProductRepository productRepository,
                        ProductService productService) {
         this.orderRepository = orderRepository;
@@ -36,25 +32,27 @@ public class OrderService {
         this.productService = productService;
     }
 
+    // Méthodes simplifiées
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    public Optional<Order> getOrderById(Long id) {
+    public Order getOrderById(Long id) {
         return orderRepository.findById(id);
     }
 
-    public Optional<Order> getOrderByOrderID(String orderID) {
+    public Order getOrderByOrderID(String orderID) {
         return orderRepository.findByOrderID(orderID);
     }
 
     public List<Order> getOrdersByUser(Long userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (!userOpt.isPresent()) {
-            throw new IllegalArgumentException("User not found");
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            System.out.println("Erreur: Utilisateur non trouvé");
+            return null;
         }
         
-        return orderRepository.findByUser(userOpt.get());
+        return orderRepository.findByUser(user);
     }
 
     public List<Order> getOrdersByStatus(String status) {
@@ -62,27 +60,28 @@ public class OrderService {
     }
 
     public Order placeOrder(Long userId, Long cartId, String shippingAddress, String paymentMethod) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
+        User user = userRepository.findById(userId);
+        Cart cart = cartRepository.findById(cartId);
         
-        if (!userOpt.isPresent()) {
-            throw new IllegalArgumentException("User not found");
+        if (user == null) {
+            System.out.println("Erreur: Utilisateur non trouvé");
+            return null;
         }
-        if (!cartOpt.isPresent()) {
-            throw new IllegalArgumentException("Cart not found");
+        if (cart == null) {
+            System.out.println("Erreur: Panier non trouvé");
+            return null;
         }
-        
-        User user = userOpt.get();
-        Cart cart = cartOpt.get();
         
         // Vérifier si le panier appartient à l'utilisateur
-        if (!cart.getUser().equals(user)) {
-            throw new IllegalArgumentException("Cart does not belong to the user");
+        if (cart.getUser() == null || !cart.getUser().getId().equals(user.getId())) {
+            System.out.println("Erreur: Le panier n'appartient pas à cet utilisateur");
+            return null;
         }
         
         // Vérifier si le panier est vide
         if (cart.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Cannot place an order with an empty cart");
+            System.out.println("Erreur: Impossible de passer une commande avec un panier vide");
+            return null;
         }
         
         // Vérifier la disponibilité du stock pour tous les produits
@@ -91,7 +90,8 @@ public class OrderService {
             int quantity = entry.getValue();
             
             if (product.getStockQuantity() < quantity) {
-                throw new IllegalArgumentException("Not enough stock for product: " + product.getProductName());
+                System.out.println("Erreur: Stock insuffisant pour " + product.getProductName());
+                return null;
             }
         }
         
@@ -117,38 +117,38 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         
         // Ajouter la commande à l'historique de l'utilisateur
-        user.getOrderHistory().add(savedOrder);
+        user.addOrder(savedOrder);
         userRepository.save(user);
         
         // Vider le panier
         cart.clear();
         cartRepository.save(cart);
         
+        System.out.println("Commande #" + order.getOrderID() + " créée avec succès");
         return savedOrder;
     }
 
     public Order updateOrderStatus(Long orderId, String newStatus) {
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (!orderOpt.isPresent()) {
-            throw new IllegalArgumentException("Order not found");
+        Order order = orderRepository.findById(orderId);
+        if (order == null) {
+            System.out.println("Erreur: Commande non trouvée");
+            return null;
         }
         
-        Order order = orderOpt.get();
         order.updateStatus(newStatus);
-        
         return orderRepository.save(order);
     }
 
     public boolean cancelOrder(Long orderId) {
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (!orderOpt.isPresent()) {
+        Order order = orderRepository.findById(orderId);
+        if (order == null) {
+            System.out.println("Erreur: Commande non trouvée");
             return false;
         }
         
-        Order order = orderOpt.get();
-        
         // Vérifier si la commande peut être annulée (seulement si elle est en traitement)
         if (!"PROCESSING".equals(order.getStatus())) {
+            System.out.println("Erreur: Impossible d'annuler une commande qui n'est pas en cours de traitement");
             return false;
         }
         
@@ -164,9 +164,27 @@ public class OrderService {
         }
         
         orderRepository.save(order);
+        System.out.println("Commande #" + order.getOrderID() + " annulée avec succès");
         return true;
     }
+    
+    // Méthode pour afficher toutes les commandes
+    public void displayAllOrders() {
+        orderRepository.displayAllOrders();
+    }
+    
+    // Méthode pour afficher les détails d'une commande spécifique
+    public void displayOrderDetails(Long orderId) {
+        Order order = orderRepository.findById(orderId);
+        if (order == null) {
+            System.out.println("Erreur: Commande non trouvée");
+            return;
+        }
+        
+        order.displayOrderDetails();
+    }
 
+    // Génération d'un ID de commande unique
     private String generateOrderID() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }

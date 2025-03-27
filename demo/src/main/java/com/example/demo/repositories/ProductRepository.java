@@ -1,56 +1,70 @@
 package com.example.demo.repositories;
 
 import com.example.demo.models.Product;
-import org.springframework.stereotype.Repository;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-@Repository
+// Repository simplifié, sans annotations Spring
 public class ProductRepository {
-    private Map<Long, Product> products = new HashMap<>();
-    private long nextId = 1;
+    private Map<Long, Product> products;
+    private long nextId;
 
     public ProductRepository() {
-        // Ajouter quelques produits pour tester
+        this.products = new HashMap<>();
+        this.nextId = 1;
+        
+        // Ajouter quelques produits pour test
+        initDemoProducts();
+    }
+
+    // Initialisation des données de démonstration
+    private void initDemoProducts() {
         Product product1 = new Product(nextId++, "Smartphone X", "PROD-001", 699.99, 100);
-        product1.setDescription("Latest smartphone with advanced features");
-        product1.setCategory("Electronics");
+        product1.setDescription("Le dernier smartphone avec des fonctionnalités avancées");
+        product1.setCategory("Électronique");
         
-        Product product2 = new Product(nextId++, "Laptop Pro", "PROD-002", 1299.99, 50);
-        product2.setDescription("High-performance laptop for professionals");
-        product2.setCategory("Electronics");
+        Product product2 = new Product(nextId++, "Ordinateur Portable Pro", "PROD-002", 1299.99, 50);
+        product2.setDescription("Ordinateur haute performance pour les professionnels");
+        product2.setCategory("Électronique");
         
-        Product product3 = new Product(nextId++, "Wireless Headphones", "PROD-003", 159.99, 200);
-        product3.setDescription("Premium wireless headphones with noise cancellation");
+        Product product3 = new Product(nextId++, "Écouteurs sans fil", "PROD-003", 159.99, 200);
+        product3.setDescription("Écouteurs sans fil premium avec annulation de bruit");
         product3.setCategory("Audio");
         
+        // Sauvegarder dans la collection
         products.put(product1.getId(), product1);
         products.put(product2.getId(), product2);
         products.put(product3.getId(), product3);
     }
 
+    // Méthodes CRUD simplifiées
     public List<Product> findAll() {
         return new ArrayList<>(products.values());
     }
 
-    public Optional<Product> findById(Long id) {
-        return Optional.ofNullable(products.get(id));
+    public Product findById(Long id) {
+        return products.get(id);
     }
 
-    public Optional<Product> findByProductID(String productID) {
-        return products.values().stream()
-                .filter(product -> product.getProductID().equals(productID))
-                .findFirst();
+    public Product findByProductID(String productID) {
+        for (Product product : products.values()) {
+            if (product.getProductID().equals(productID)) {
+                return product;
+            }
+        }
+        return null;
     }
 
     public List<Product> findByCategory(String category) {
-        return products.values().stream()
-                .filter(product -> category.equals(product.getCategory()))
-                .toList();
+        List<Product> categoryProducts = new ArrayList<>();
+        for (Product product : products.values()) {
+            if (category.equals(product.getCategory())) {
+                categoryProducts.add(product);
+            }
+        }
+        return categoryProducts;
     }
 
     public Product save(Product product) {
@@ -62,10 +76,21 @@ public class ProductRepository {
     }
 
     public void delete(Product product) {
-        products.remove(product.getId());
+        if (product != null && product.getId() != null) {
+            products.remove(product.getId());
+        }
     }
 
     public void deleteById(Long id) {
         products.remove(id);
+    }
+    
+    // Méthode pour afficher tous les produits (pour testing)
+    public void displayAllProducts() {
+        System.out.println("=== LISTE DES PRODUITS ===");
+        for (Product product : products.values()) {
+            System.out.println(product.getProductDetails());
+            System.out.println("------------------------");
+        }
     }
 }
